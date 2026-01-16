@@ -1,7 +1,172 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
-import { Upload, FileText, Calculator, Edit, Trash2, Loader2 } from 'lucide-react';
+import { Upload, FileText, Calculator, Edit, Trash2, Loader2, Download } from 'lucide-react';
+
+// Template generation function
+const generateFeederTemplate = () => {
+  // Define the template structure with sample data
+  const templateData = [
+    {
+      'Serial No': 1,
+      'Cable Number': 'CBL-001',
+      'Feeder Description': 'TRF to PMCC-1',
+      'From Bus': 'TRF-415V',
+      'To Bus': 'PMCC-1',
+      'Voltage (V)': 415,
+      'Power Factor': 0.85,
+      'Efficiency (%)': 95,
+      'Derating Factor': 0.87,
+      'Breaker Type': 'ACB',
+      'Load KW': 125.5,
+      'Load KVA': 147.6,
+      'Cable Type': 'XLPE',
+      'Installation Method': 'Cable Tray',
+      'Ambient Temp (°C)': 35,
+      'Ground Temp (°C)': 25,
+      'Length (m)': 25.5
+    },
+    {
+      'Serial No': 2,
+      'Cable Number': 'CBL-002',
+      'Feeder Description': 'PMCC-1 to MCC-1',
+      'From Bus': 'PMCC-1',
+      'To Bus': 'MCC-1',
+      'Voltage (V)': 415,
+      'Power Factor': 0.88,
+      'Efficiency (%)': 92,
+      'Derating Factor': 0.85,
+      'Breaker Type': 'MCCB',
+      'Load KW': 95.8,
+      'Load KVA': 109.1,
+      'Cable Type': 'PVC',
+      'Installation Method': 'Conduit',
+      'Ambient Temp (°C)': 40,
+      'Ground Temp (°C)': 30,
+      'Length (m)': 18.2
+    },
+    {
+      'Serial No': 3,
+      'Cable Number': 'CBL-003',
+      'Feeder Description': 'MCC-1 to MOTOR-1',
+      'From Bus': 'MCC-1',
+      'To Bus': 'MOTOR-1',
+      'Voltage (V)': 415,
+      'Power Factor': 0.82,
+      'Efficiency (%)': 89,
+      'Derating Factor': 0.90,
+      'Breaker Type': 'MCCB',
+      'Load KW': 145.2,
+      'Load KVA': 177.3,
+      'Cable Type': 'XLPE',
+      'Installation Method': 'Direct Burial',
+      'Ambient Temp (°C)': 30,
+      'Ground Temp (°C)': 20,
+      'Length (m)': 35.8
+    },
+    {
+      'Serial No': 4,
+      'Cable Number': 'CBL-004',
+      'Feeder Description': 'PMCC-1 to LIGHTING-1',
+      'From Bus': 'PMCC-1',
+      'To Bus': 'LIGHTING-1',
+      'Voltage (V)': 415,
+      'Power Factor': 0.95,
+      'Efficiency (%)': 98,
+      'Derating Factor': 0.92,
+      'Breaker Type': 'MCB',
+      'Load KW': 25.3,
+      'Load KVA': 26.6,
+      'Cable Type': 'PVC',
+      'Installation Method': 'Cable Tray',
+      'Ambient Temp (°C)': 35,
+      'Ground Temp (°C)': 25,
+      'Length (m)': 12.5
+    },
+    {
+      'Serial No': 5,
+      'Cable Number': 'CBL-005',
+      'Feeder Description': 'TRF to PMCC-2',
+      'From Bus': 'TRF-415V',
+      'To Bus': 'PMCC-2',
+      'Voltage (V)': 415,
+      'Power Factor': 0.86,
+      'Efficiency (%)': 94,
+      'Derating Factor': 0.88,
+      'Breaker Type': 'ACB',
+      'Load KW': 180.7,
+      'Load KVA': 210.2,
+      'Cable Type': 'XLPE',
+      'Installation Method': 'Cable Tray',
+      'Ambient Temp (°C)': 38,
+      'Ground Temp (°C)': 28,
+      'Length (m)': 42.3
+    }
+  ];
+
+  // Create workbook and worksheet
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(templateData);
+
+  // Set column widths for better readability
+  const colWidths = [
+    { wch: 10 }, // Serial No
+    { wch: 12 }, // Cable Number
+    { wch: 25 }, // Feeder Description
+    { wch: 15 }, // From Bus
+    { wch: 15 }, // To Bus
+    { wch: 12 }, // Voltage (V)
+    { wch: 12 }, // Power Factor
+    { wch: 15 }, // Efficiency (%)
+    { wch: 15 }, // Derating Factor
+    { wch: 12 }, // Breaker Type
+    { wch: 10 }, // Load KW
+    { wch: 12 }, // Load KVA
+    { wch: 12 }, // Cable Type
+    { wch: 18 }, // Installation Method
+    { wch: 18 }, // Ambient Temp (°C)
+    { wch: 18 }, // Ground Temp (°C)
+    { wch: 12 }  // Length (m)
+  ];
+  ws['!cols'] = colWidths;
+
+  // Add worksheet to workbook
+  XLSX.utils.book_append_sheet(wb, ws, 'Feeder_List_Template');
+
+  // Create a second sheet with instructions
+  const instructionsData = [
+    { 'Column': 'Serial No', 'Description': 'Sequential number for each feeder', 'Required': 'Yes', 'Example': '1, 2, 3...' },
+    { 'Column': 'Cable Number', 'Description': 'Unique identifier for each cable', 'Required': 'Yes', 'Example': 'CBL-001, CBL-002' },
+    { 'Column': 'Feeder Description', 'Description': 'Description of the feeder connection', 'Required': 'Yes', 'Example': 'TRF to PMCC-1' },
+    { 'Column': 'From Bus', 'Description': 'Source bus/switchgear name', 'Required': 'Yes', 'Example': 'TRF-415V, PMCC-1' },
+    { 'Column': 'To Bus', 'Description': 'Destination bus/load name', 'Required': 'Yes', 'Example': 'MCC-1, MOTOR-1' },
+    { 'Column': 'Voltage (V)', 'Description': 'System voltage in volts', 'Required': 'Yes', 'Example': '415, 690, 11000' },
+    { 'Column': 'Power Factor', 'Description': 'Power factor of the load (0.8 to 1.0)', 'Required': 'Yes', 'Example': '0.85, 0.9, 0.95' },
+    { 'Column': 'Efficiency (%)', 'Description': 'Efficiency of the equipment in percentage', 'Required': 'Yes', 'Example': '85, 90, 95' },
+    { 'Column': 'Derating Factor', 'Description': 'Cable derating factor (0.8 to 1.0)', 'Required': 'Yes', 'Example': '0.87, 0.85, 0.9' },
+    { 'Column': 'Breaker Type', 'Description': 'Type of protective device', 'Required': 'Yes', 'Example': 'ACB, MCCB, MCB, VCB' },
+    { 'Column': 'Load KW', 'Description': 'Active power load in kilowatts', 'Required': 'Yes', 'Example': '125.5, 95.8, 145.2' },
+    { 'Column': 'Load KVA', 'Description': 'Apparent power load in KVA', 'Required': 'Yes', 'Example': '147.6, 109.1, 177.3' },
+    { 'Column': 'Cable Type', 'Description': 'Type of cable insulation', 'Required': 'No', 'Example': 'XLPE, PVC, EPR' },
+    { 'Column': 'Installation Method', 'Description': 'How the cable is installed', 'Required': 'No', 'Example': 'Cable Tray, Conduit, Direct Burial' },
+    { 'Column': 'Ambient Temp (°C)', 'Description': 'Ambient temperature in Celsius', 'Required': 'No', 'Example': '35, 40, 30' },
+    { 'Column': 'Ground Temp (°C)', 'Description': 'Ground temperature in Celsius', 'Required': 'No', 'Example': '25, 30, 20' },
+    { 'Column': 'Length (m)', 'Description': 'Cable length in meters', 'Required': 'Yes', 'Example': '25.5, 18.2, 35.8' }
+  ];
+
+  const wsInstructions = XLSX.utils.json_to_sheet(instructionsData);
+  const instructionWidths = [
+    { wch: 20 }, // Column
+    { wch: 40 }, // Description
+    { wch: 10 }, // Required
+    { wch: 25 }  // Example
+  ];
+  wsInstructions['!cols'] = instructionWidths;
+  XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
+
+  // Download the file
+  XLSX.writeFile(wb, 'SCEAP_Feeder_List_Template.xlsx');
+};
 
 interface FeederData {
   id: number;
@@ -344,6 +509,35 @@ const SizingTab = () => {
       {(isLoadingFeeder || isLoadingCatalogue) && (
         <LoadingOverlay message={loadingMessage} />
       )}
+
+      {/* Template Download Section */}
+      <div className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 rounded-lg p-6 border border-cyan-700/50">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-2 flex items-center">
+              <FileText className="mr-2" size={20} />
+              SCEAP Feeder List Template
+            </h3>
+            <p className="text-slate-300 text-sm mb-4">
+              Download our pre-formatted Excel template with all required columns for accurate cable sizing calculations.
+              Fill in your data and upload it back for instant analysis.
+            </p>
+            <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+              <span className="bg-slate-700 px-2 py-1 rounded">17 Required Columns</span>
+              <span className="bg-slate-700 px-2 py-1 rounded">Sample Data Included</span>
+              <span className="bg-slate-700 px-2 py-1 rounded">Instructions Sheet</span>
+              <span className="bg-slate-700 px-2 py-1 rounded">Ready for Calculations</span>
+            </div>
+          </div>
+          <button
+            onClick={generateFeederTemplate}
+            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
+          >
+            <Download size={20} />
+            Download Template
+          </button>
+        </div>
+      </div>
 
       {/* Upload Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
