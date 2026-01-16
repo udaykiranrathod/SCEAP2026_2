@@ -5,17 +5,7 @@ import { Upload, FileText, Calculator, Edit, Trash2 } from 'lucide-react';
 
 interface FeederData {
   id: number;
-  feederDescription: string;
-  busA: string;
-  busB: string;
-  voltage: number;
-  pf: number;
-  efficiency: number;
-  derating: number;
-  breaker: string;
-  loadKW: number;
-  loadKVA: number;
-  [key: string]: any;
+  [key: string]: any; // Allow any additional columns from Excel
 }
 
 interface CableCatalogue {
@@ -28,6 +18,7 @@ interface CableCatalogue {
 
 const SizingTab = () => {
   const [feederData, setFeederData] = useState<FeederData[]>([]);
+  const [feederHeaders, setFeederHeaders] = useState<string[]>([]);
   const [catalogueData, setCatalogueData] = useState<CableCatalogue[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
   const [editingRow, setEditingRow] = useState<number | null>(null);
@@ -60,26 +51,58 @@ const SizingTab = () => {
     const reader = new FileReader();
 
     reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-      // Convert to feeder data format
-      const headers = jsonData[0] as string[];
-      const rows = jsonData.slice(1) as any[][];
-
-      const feeders: FeederData[] = rows.map((row, index) => {
-        const feeder: any = { id: index + 1 };
-        headers.forEach((header, colIndex) => {
-          const key = header.toLowerCase().replace(/\s+/g, '');
-          feeder[key] = row[colIndex] || '';
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, {
+          type: 'array',
+          cellDates: true,
+          cellNF: false,
+          cellText: false
         });
-        return feeder as FeederData;
-      });
 
-      setFeederData(feeders);
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+
+        // Use sheet_to_json with header: 1 to get array of arrays
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+          defval: '',
+          blankrows: false
+        });
+
+        if (jsonData.length === 0) {
+          alert('No data found in the Excel file');
+          return;
+        }
+
+        // First row is headers
+        const headers = jsonData[0] as string[];
+        const rows = jsonData.slice(1) as any[][];
+
+        // Filter out completely empty rows
+        const validRows = rows.filter(row =>
+          row.some(cell => cell !== null && cell !== undefined && cell !== '')
+        );
+
+        // Convert to feeder data format, preserving original column names
+        const feeders: FeederData[] = validRows.map((row, index) => {
+          const feeder: any = { id: index + 1 };
+          headers.forEach((header, colIndex) => {
+            // Preserve original header name
+            const originalHeader = header || `Column_${colIndex + 1}`;
+            feeder[originalHeader] = row[colIndex] || '';
+          });
+          return feeder as FeederData;
+        });
+
+        setFeederHeaders(headers);
+        setFeederData(feeders);
+
+        console.log(`Loaded ${feeders.length} feeders with ${headers.length} columns`);
+      } catch (error) {
+        console.error('Error parsing Excel file:', error);
+        alert('Error parsing Excel file. Please check the file format and try again.');
+      }
     };
 
     reader.readAsArrayBuffer(file);
@@ -90,13 +113,36 @@ const SizingTab = () => {
     const reader = new FileReader();
 
     reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, {
+          type: 'array',
+          cellDates: true,
+          cellNF: false,
+          cellText: false
+        });
 
-      setCatalogueData(jsonData as CableCatalogue[]);
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+
+        // Parse as objects to maintain data types
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+          defval: '',
+          blankrows: false
+        });
+
+        // Filter out completely empty objects
+        const validData = jsonData.filter((row: any) =>
+          Object.values(row).some(val => val !== null && val !== undefined && val !== '')
+        );
+
+        setCatalogueData(validData as CableCatalogue[]);
+
+        console.log(`Loaded ${validData.length} catalogue entries`);
+      } catch (error) {
+        console.error('Error parsing catalogue Excel file:', error);
+        alert('Error parsing catalogue Excel file. Please check the file format and try again.');
+      }
     };
 
     reader.readAsArrayBuffer(file);
@@ -215,7 +261,12 @@ const SizingTab = () => {
         <div className="bg-slate-800 rounded-lg border border-slate-700">
           <div className="p-6 border-b border-slate-700">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-white">Feeder Data</h3>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Feeder Data</h3>
+                <p className="text-sm text-slate-400 mt-1">
+                  {feederData.length} rows × {feederHeaders.length} columns
+                </p>
+              </div>
               <button
                 onClick={handleRunSizing}
                 disabled={isCalculating}
@@ -227,104 +278,113 @@ const SizingTab = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-700">
-                <tr>
-                  {Object.keys(feederData[0] || {}).map((key) => (
-                    key !== 'id' && (
-                      <th key={key} className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+          {/* Scrollable container with both horizontal and vertical scrolling */}
+          <div className="max-h-96 overflow-auto">
+            <div className="min-w-full inline-block align-middle">
+              <table className="min-w-full divide-y divide-slate-700">
+                <thead className="bg-slate-700 sticky top-0 z-10">
+                  <tr>
+                    {feederHeaders.map((header, index) => (
+                      <th
+                        key={index}
+                        className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider whitespace-nowrap bg-slate-700"
+                        style={{ minWidth: '120px' }}
+                      >
+                        {header || `Column ${index + 1}`}
                       </th>
-                    )
-                  ))}
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-700">
-                {feederData.map((feeder) => (
-                  <tr key={feeder.id} className="hover:bg-slate-700">
-                    {Object.entries(feeder).map(([key, value]) => (
-                      key !== 'id' && (
-                        <td key={key} className="px-4 py-4 whitespace-nowrap text-sm text-slate-300">
+                    ))}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider whitespace-nowrap bg-slate-700 sticky right-0">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-slate-800 divide-y divide-slate-700">
+                  {feederData.map((feeder) => (
+                    <tr key={feeder.id} className="hover:bg-slate-700">
+                      {feederHeaders.map((header, colIndex) => (
+                        <td
+                          key={colIndex}
+                          className="px-4 py-4 text-sm text-slate-300 whitespace-nowrap"
+                          style={{ minWidth: '120px' }}
+                        >
                           {editingRow === feeder.id ? (
                             <input
                               type="text"
-                              defaultValue={value}
-                              className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white w-full"
+                              defaultValue={feeder[header] || ''}
+                              className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white w-full min-w-0"
                               onBlur={(e) => {
-                                const updated = { ...feeder, [key]: e.target.value };
+                                const updated = { ...feeder, [header]: e.target.value };
                                 handleSave(feeder.id, updated);
                               }}
                             />
                           ) : (
-                            value
+                            <div className="truncate max-w-xs" title={String(feeder[header] || '')}>
+                              {feeder[header] || ''}
+                            </div>
                           )}
                         </td>
-                      )
-                    ))}
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleEdit(feeder.id)}
-                        className="text-cyan-400 hover:text-cyan-300 mr-3"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(feeder.id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      ))}
+                      <td className="px-4 py-4 text-sm font-medium whitespace-nowrap sticky right-0 bg-slate-800">
+                        <button
+                          onClick={() => handleEdit(feeder.id)}
+                          className="text-cyan-400 hover:text-cyan-300 mr-3"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(feeder.id)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* Catalogue Preview */}
       <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-lg font-semibold text-white mb-4">Cable Catalogue</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-700">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-white">Cable Catalogue</h3>
+          <span className="text-sm text-slate-400">
+            {catalogue.length} cable sizes available
+          </span>
+        </div>
+        <div className="max-h-64 overflow-auto">
+          <table className="min-w-full divide-y divide-slate-700">
+            <thead className="bg-slate-700 sticky top-0 z-10">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider whitespace-nowrap">
                   Size (mm²)
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider whitespace-nowrap">
                   Current (A)
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider whitespace-nowrap">
                   Resistance (Ω/km)
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider whitespace-nowrap">
                   Reactance (Ω/km)
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700">
-              {catalogue.slice(0, 10).map((item, index) => (
-                <tr key={index}>
-                  <td className="px-4 py-3 text-sm text-slate-300">{item.size}</td>
-                  <td className="px-4 py-3 text-sm text-slate-300">{item.current}</td>
-                  <td className="px-4 py-3 text-sm text-slate-300">{item.resistance}</td>
-                  <td className="px-4 py-3 text-sm text-slate-300">{item.reactance}</td>
+            <tbody className="bg-slate-800 divide-y divide-slate-700">
+              {catalogue.map((item, index) => (
+                <tr key={index} className="hover:bg-slate-700">
+                  <td className="px-4 py-3 text-sm text-slate-300 whitespace-nowrap">{item.size}</td>
+                  <td className="px-4 py-3 text-sm text-slate-300 whitespace-nowrap">{item.current}</td>
+                  <td className="px-4 py-3 text-sm text-slate-300 whitespace-nowrap">{item.resistance}</td>
+                  <td className="px-4 py-3 text-sm text-slate-300 whitespace-nowrap">{item.reactance}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {catalogue.length > 10 && (
-          <p className="text-slate-400 text-sm mt-4">
-            Showing first 10 sizes. Total: {catalogue.length} sizes available.
-          </p>
-        )}
       </div>
     </div>
   );
