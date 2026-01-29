@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCEAP 2.0 - Comprehensive Technical Guide | UdayKiranRathod</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            line-height: 1.8;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            border-left: 8px solid #2563eb;
+        }
+        
+        h1 {
+            color: #1e3c72;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .meta {
+            color: #999;
+            font-size: 0.9em;
+        }
+        
+        nav {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+        
+        nav h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        nav ul {
+            list-style: none;
+            columns: 3;
+            gap: 20px;
+        }
+        
+        nav li {
+            margin-bottom: 10px;
+        }
+        
+        nav a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #1e40af;
+            text-decoration: underline;
+        }
+        
+        section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #1e3c72;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            color: #2563eb;
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            color: #475569;
+            font-size: 1.2em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .file-structure {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #10b981;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .explanation {
+            background: #eff6ff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            margin: 20px 0;
+        }
+        
+        .formula {
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: #1e3c72;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+        
+        li {
+            margin-bottom: 10px;
+        }
+        
+        .highlight {
+            background: #fef08a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        
+        .warning {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: #dcfce7;
+            border-left: 4px solid #22c55e;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .card h4 {
+            color: #1e3c72;
+            margin-top: 0;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: white;
+            margin-top: 50px;
+        }
+        
+        .breadcrumb {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        
+        .toc {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .toc ol {
+            margin-left: 20px;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2563eb;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+            z-index: 99;
+        }
+        
+        .back-to-top:hover {
+            background: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1>🚀 SCEAP 2.0 - Complete Technical Guide</h1>
+            <p class="subtitle">Smart Cable Engineering Automation Platform</p>
+            <p class="meta">
+                <strong>Created for:</strong> UdayKiranRathod | 
+                <strong>Date:</strong> January 29, 2026 | 
+                <strong>Status:</strong> ✅ Production Ready
+            </p>
+        </header>
+
+        <!-- NAVIGATION -->
+        <nav>
+            <h3>📚 Quick Navigation</h3>
+            <ul>
+                <li><a href="#project-overview">Project Overview</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#project-structure">Project Structure</a></li>
+                <li><a href="#frontend-guide">Frontend Guide</a></li>
+                <li><a href="#backend-guide">Backend Guide</a></li>
+                <li><a href="#data-flow">Data Flow</a></li>
+                <li><a href="#ui-components">UI Components</a></li>
+                <li><a href="#formulas">Cable Sizing Formulas</a></li>
+                <li><a href="#key-files">Key Files Explained</a></li>
+                <li><a href="#setup">Setup & Deployment</a></li>
+            </ul>
+        </nav>
+
+        <!-- PROJECT OVERVIEW -->
+        <section id="project-overview">
+            <h2>1️⃣ Project Overview & Purpose</h2>
+            
+            <h3>What is SCEAP 2.0?</h3>
+            <div class="explanation">
+                <strong>SCEAP</strong> = <strong>Smart Cable Engineering Automation Platform</strong>
+                
+                <p style="margin-top: 15px;">This is an <strong>intelligent web application</strong> designed to automate cable engineering workflows in power plants and buildings. Instead of manually calculating cable sizes in Excel spreadsheets, engineers can now:</p>
+                
+                <ul style="margin-top: 10px;">
+                    <li>Upload a list of electrical feeders (Excel file)</li>
+                    <li>Let the system automatically discover cable paths from equipment to transformers</li>
+                    <li>Calculate optimal cable sizes based on current, voltage drop, and short-circuit protection</li>
+                    <li>Export results in Excel or PDF format</li>
+                    <li>Make data-driven decisions with visual analysis</li>
+                </ul>
+            </div>
+
+            <h3>Why Was This Built?</h3>
+            <div class="success">
+                <p><strong>Problem Solved:</strong> Manual cable sizing calculations are time-consuming, error-prone, and hard to document.</p>
+                <p style="margin-top: 10px;"><strong>Solution Provided:</strong> Automated, accurate, repeatable, and exportable cable sizing calculations.</p>
+                <p style="margin-top: 10px;"><strong>Impact:</strong> Engineers save days of work per project and reduce calculation errors.</p>
+            </div>
+
+            <h3>Key Features at a Glance</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>🔧 Cable Sizing</h4>
+                    <p>Calculates cable size based on full load current, voltage drop, and short-circuit protection using IEC 60364 standards.</p>
+                </div>
+                <div class="card">
+                    <h4>📍 Path Discovery</h4>
+                    <p>Automatically traces cable paths from equipment to transformers using breadth-first search algorithm.</p>
+                </div>
+                <div class="card">
+                    <h4>📊 Export Options</h4>
+                    <p>Download results as Excel (XLSX) or PDF with all calculations and analysis charts.</p>
+                </div>
+                <div class="card">
+                    <h4>🎨 Professional UI</h4>
+                    <p>Dark-themed, responsive interface with real-time calculations and visual feedback.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ARCHITECTURE OVERVIEW -->
+        <section id="architecture">
+            <h2>2️⃣ Overall Architecture - How Everything Works Together</h2>
+
+            <h3>Three-Tier Architecture Pattern</h3>
+            <div class="explanation">
+                The platform uses a <strong>Client-Server Architecture</strong> with three distinct layers:
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <strong>Presentation Layer (Frontend)</strong><br/>
+                        React + TypeScript + TailwindCSS<br/>
+                        <em>What users see and interact with</em>
+                    </div>
+                    <div style="color: #666; margin-bottom: 20px;">↕️ (Communicates via HTTP/REST)</div>
+                    <div style="background: #dbeafe; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <strong>API Layer (Backend)</strong><br/>
+                        .NET Core 8 + ASP.NET Core<br/>
+                        <em>Business logic and calculations</em>
+                    </div>
+                    <div style="color: #666; margin-bottom: 20px;">↕️ (Reads/Writes)</div>
+                    <div style="background: #ddd6fe; padding: 20px; border-radius: 8px;">
+                        <strong>Data Layer (Database)</strong><br/>
+                        SQLite with Entity Framework<br/>
+                        <em>Permanent storage</em>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Technology Stack Overview</h3>
+            <table>
+                <tr>
+                    <th>Layer</th>
+                    <th>Technology</th>
+                    <th>Purpose</th>
+                    <th>Why Chosen</th>
+                </tr>
+                <tr>
+                    <td><strong>Frontend</strong></td>
+                    <td>React 18</td>
+                    <td>UI framework</td>
+                    <td>Component-based, fast, large ecosystem</td>
+                </tr>
+                <tr>
+                    <td><strong>Frontend</strong></td>
+                    <td>TypeScript</td>
+                    <td>Type safety</td>
+                    <td>Catch errors at compile-time, better IDE support</td>
+                </tr>
+                <tr>
+                    <td><strong>Frontend</strong></td>
+                    <td>TailwindCSS</td>
+                    <td>Styling</td>
+                    <td>Utility-first, fast development, responsive</td>
+                </tr>
+                <tr>
+                    <td><strong>Frontend</strong></td>
+                    <td>Vite</td>
+                    <td>Build tool</td>
+                    <td>Lightning-fast builds and HMR</td>
+                </tr>
+                <tr>
+                    <td><strong>Frontend</strong></td>
+                    <td>XLSX</td>
+                    <td>Excel import/export</td>
+                    <td>Industry standard for data exchange</td>
+                </tr>
+                <tr>
+                    <td><strong>Frontend</strong></td>
+                    <td>jsPDF</td>
+                    <td>PDF generation</td>
+                    <td>Client-side PDF creation, no backend needed</td>
+                </tr>
+                <tr>
+                    <td><strong>Backend</strong></td>
+                    <td>.NET Core 8</td>
+                    <td>Runtime</td>
+                    <td>Latest, high performance, cross-platform</td>
+                </tr>
+                <tr>
+                    <td><strong>Backend</strong></td>
+                    <td>ASP.NET Core</td>
+                    <td>Web framework</td>
+                    <td>RESTful APIs, built-in dependency injection</td>
+                </tr>
+                <tr>
+                    <td><strong>Backend</strong></td>
+                    <td>Entity Framework</td>
+                    <td>ORM (database access)</td>
+                    <td>Type-safe database queries, migrations</td>
+                </tr>
+                <tr>
+                    <td><strong>Backend</strong></td>
+                    <td>SQLite</td>
+                    <td>Database</td>
+                    <td>Lightweight, no server needed, portable</td>
+                </tr>
+            </table>
+
+            <h3>Request-Response Flow Example</h3>
+            <div class="code-block">
+User clicks "Upload Feeder List" button
+  ↓
+Frontend (React) reads Excel file
+  ↓
+Frontend sends file to Backend API via HTTP POST request
+  ↓
+Backend receives file, parses it, validates data
+  ↓
+Backend saves feeders to SQLite database
+  ↓
+Backend runs path discovery algorithm
+  ↓
+Backend returns discovered paths as JSON response
+  ↓
+Frontend receives JSON and updates React state
+  ↓
+React re-renders UI to display the paths
+  ↓
+User sees optimized cable paths on screen
+            </div>
+        </section>
+
+        <!-- PROJECT STRUCTURE -->
+        <section id="project-structure">
+            <h2>3️⃣ Project Structure - Folder Organization & Purpose</h2>
+
+            <h3>Why Is the Project Organized This Way?</h3>
+            <div class="explanation">
+                The project is split into <strong>two completely separate applications</strong>:
+                
+                <ul style="margin-top: 15px;">
+                    <li><strong>sceap-frontend/</strong> - The user interface (React application)</li>
+                    <li><strong>sceap-backend/</strong> - The server and business logic (.NET application)</li>
+                </ul>
+                
+                <p style="margin-top: 15px;">This separation of concerns provides <strong>scalability, maintainability, and independent deployment</strong>. The frontend can be updated without touching the backend and vice versa.</p>
+            </div>
+
+            <h3>Complete Folder Structure</h3>
+            <div class="file-structure">SCEAP2026_2/
+│
+├── 📁 sceap-frontend/                    ← React Application (Port 5173)
+│   ├── public/                           ← Static assets (favicon, fonts, etc.)
+│   ├── src/
+│   │   ├── components/                   ← React Components (Reusable UI pieces)
+│   │   │   ├── ResultsTab.tsx            ← Cable sizing results table with export
+│   │   │   ├── OptimizationTab.tsx       ← Path discovery visualization
+│   │   │   ├── SizingTab.tsx             ← File upload and feeder input
+│   │   │   ├── Dashboard.tsx             ← Main overview dashboard
+│   │   │   └── ... (other components)
+│   │   │
+│   │   ├── pages/                        ← Full page components (for routing)
+│   │   │   ├── CableSizing.tsx           ← Main cable sizing page
+│   │   │   ├── Dashboard.tsx             ← Dashboard page
+│   │   │   └── ... (other pages)
+│   │   │
+│   │   ├── context/                      ← React Context API (Global State)
+│   │   │   └── PathContext.tsx           ← Shared state for path data
+│   │   │
+│   │   ├── utils/                        ← Helper functions & algorithms
+│   │   │   ├── pathDiscoveryService.ts   ← Path discovery algorithm (BFS)
+│   │   │   ├── demoData.ts               ← Sample feeder data for testing
+│   │   │   └── ... (other utilities)
+│   │   │
+│   │   ├── App.tsx                       ← Root component with routing
+│   │   ├── main.tsx                      ← App entry point
+│   │   └── index.css                     ← Global styles + scrollbar styling
+│   │
+│   ├── package.json                      ← NPM dependencies & scripts
+│   ├── package-lock.json                 ← Locked dependency versions
+│   ├── vite.config.ts                    ← Vite build configuration
+│   ├── tsconfig.json                     ← TypeScript configuration
+│   └── tailwind.config.js                ← TailwindCSS customization
+│
+├── 📁 sceap-backend/                     ← .NET Core Application (Port 5000)
+│   ├── Controllers/                      ← API Endpoints (entry points for requests)
+│   │   ├── ProjectsController.cs         ← Project management endpoints
+│   │   ├── CableSizingController.cs      ← Cable sizing endpoints
+│   │   ├── CableRoutingController.cs     ← Routing endpoints
+│   │   └── ... (other controllers)
+│   │
+│   ├── Services/                         ← Business Logic Layer
+│   │   ├── ICableSizingService.cs        ← Interface for cable sizing
+│   │   ├── CableSizingService.cs         ← Implementation of cable sizing
+│   │   ├── ITerminationService.cs        ← Interface for termination
+│   │   └── ... (other services)
+│   │
+│   ├── Models/                           ← Data Classes (represents database tables)
+│   │   ├── Project.cs                    ← Project data model
+│   │   ├── Cable.cs                      ← Cable data model
+│   │   ├── Termination.cs                ← Termination data model
+│   │   └── ... (other models)
+│   │
+│   ├── Data/                             ← Database Context (EF Core)
+│   │   └── SceapDbContext.cs             ← Database configuration & tables
+│   │
+│   ├── Engines/                          ← Complex Algorithms
+│   │   ├── CableSizingEngine.cs          ← Cable sizing calculations
+│   │   └── RoutingEngine.cs              ← Routing optimization
+│   │
+│   ├── Program.cs                        ← Application startup & configuration
+│   ├── appsettings.json                  ← Configuration (database, logging, etc.)
+│   ├── SCEAP.csproj                      ← Project file (.NET dependencies)
+│   └── sceap.db                          ← SQLite database file (generated at runtime)
+│
+└── 📄 DEPLOYMENT_READY.md               ← Deployment checklist
