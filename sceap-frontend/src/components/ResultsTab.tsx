@@ -158,12 +158,19 @@ const calculateCableSizing = (cable: CableSegment): CableSizingResult => {
   
   // Calculate current per run
   const currentPerRun = requiredCurrent / numberOfRuns;
-  
-  // Find cable size for the per-run current
-  for (const [size, capacity] of Object.entries(CABLE_AMPACITY)) {
-    if (capacity >= currentPerRun) {
-      finalCableSize = Number(size);
-      break;
+
+  // If there's effectively no load (zero or negligible current),
+  // avoid selecting unreasonably small conductor like 1 mm².
+  // Use the suitable size or a practical minimum (25 mm²) as floor.
+  if (!cable.loadKW || currentPerRun <= 1) {
+    finalCableSize = Math.max(suitableSize, 25);
+  } else {
+    // Find cable size for the per-run current
+    for (const [size, capacity] of Object.entries(CABLE_AMPACITY)) {
+      if (capacity >= currentPerRun) {
+        finalCableSize = Number(size);
+        break;
+      }
     }
   }
   
@@ -171,10 +178,14 @@ const calculateCableSizing = (cable: CableSegment): CableSizingResult => {
   if (finalCableSize > 240 && numberOfRuns < 10) {
     numberOfRuns++;
     const newCurrentPerRun = requiredCurrent / numberOfRuns;
-    for (const [size, capacity] of Object.entries(CABLE_AMPACITY)) {
-      if (capacity >= newCurrentPerRun) {
-        finalCableSize = Number(size);
-        break;
+    if (!cable.loadKW || newCurrentPerRun <= 1) {
+      finalCableSize = Math.max(suitableSize, 25);
+    } else {
+      for (const [size, capacity] of Object.entries(CABLE_AMPACITY)) {
+        if (capacity >= newCurrentPerRun) {
+          finalCableSize = Number(size);
+          break;
+        }
       }
     }
   }
@@ -505,7 +516,7 @@ const ResultsTab = () => {
                 <th className="px-3 py-2 text-center font-bold text-green-400">
                   No. of Runs
                 </th>
-                <th className="px-3 py-2 text-center font-bold text-purple-400">
+                <th className="px-3 py-2 text-center font-bold text-purple-400 min-w-[220px]">
                   Cable Designation
                 </th>
                 <th className="px-3 py-2 text-left text-slate-300">Breaker</th>
@@ -572,19 +583,19 @@ const ResultsTab = () => {
                   <td className="px-3 py-2 text-center font-bold text-green-400 bg-slate-700/50 rounded">
                     {result.numberOfRuns}
                   </td>
-                  <td className="px-3 py-2 text-center font-bold text-purple-300 bg-purple-900/30 rounded whitespace-nowrap">
+                  <td className="px-3 py-2 text-center font-bold text-purple-300 bg-purple-900/30 rounded whitespace-nowrap min-w-[220px]">
                     {result.cableDesignation}
                   </td>
                   <td className="px-3 py-2 text-slate-300">
                     {result.breakerSize}
                   </td>
-                  <td className="px-3 py-2 text-center">
+                  <td className="px-3 py-2 text-center align-middle">
                     {result.status === 'valid' ? (
-                      <span className="px-2 py-1 rounded bg-green-500/20 text-green-300 text-xs font-medium">
+                      <span className="inline-flex items-center gap-2 px-2 py-1 rounded bg-green-500/20 text-green-300 text-xs font-medium">
                         ✓ VALID
                       </span>
                     ) : (
-                      <span className="px-2 py-1 rounded bg-red-500/20 text-red-300 text-xs font-medium">
+                      <span className="inline-flex items-center gap-2 px-2 py-1 rounded bg-red-500/20 text-red-300 text-xs font-medium">
                         ✗ INVALID
                       </span>
                     )}
